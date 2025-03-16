@@ -1,2 +1,1 @@
-# CelebrityResale
-Tokenized celebrity resale platform 
+# frontend_celeb_platform
