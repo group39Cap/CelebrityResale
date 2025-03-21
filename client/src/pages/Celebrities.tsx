@@ -96,7 +96,7 @@ const Celebrities = () => {
           <div className="mb-12 bg-neutral-100 rounded-lg overflow-hidden shadow-lg">
             <div className="flex flex-col md:flex-row">
               <div className="w-full md:w-1/3 h-64 md:h-auto">
-                <img src={featuredCelebrity.image} alt={featuredCelebrity.name} className="w-full h-full object-cover" />
+                <img src={featuredCelebrity.image} alt={featuredCelebrity.name} className="w-full h-full object-contain" />
               </div>
               <div className="w-full md:w-2/3 p-6 md:p-8">
                 <div className="flex items-center mb-4">
@@ -135,7 +135,7 @@ const Celebrities = () => {
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <div className="h-48 overflow-hidden">
-                  <img src={celebrity.image} alt={celebrity.name} className="w-full h-full object-cover object-top" />
+                  <img src={celebrity.image} alt={celebrity.name} className="w-full h-full object-contain object-top" />
                 </div>
                 <CardContent className="p-5">
                   <div className="flex items-center mb-3">

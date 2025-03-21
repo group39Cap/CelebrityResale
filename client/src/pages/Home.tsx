@@ -207,7 +207,7 @@ const Home = () => {
                   </div>
                 </div>
               </div>
-              <p className="text-white/80">"As a collector, authenticity is everything. CelebStyle's blockchain verification gave me complete confidence in my purchase of a rare watch worn in a blockbuster film."</p>
+              <p className="text-white/80">"As a collector, authenticity is everything. Stardrobe's blockchain verification gave me complete confidence in my purchase of a rare watch worn in a blockbuster film."</p>
             </div>
             
             <div className="bg-primary-light p-6 rounded-lg animate-[slideUp_0.5s_ease_forwards]" style={{ animationDelay: '0.3s' }}>

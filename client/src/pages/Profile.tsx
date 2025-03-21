@@ -31,6 +31,7 @@ import {
   CheckCircle2,
   HelpCircle,
   Copy,
+  Info,
 } from "lucide-react";
 
 // Filter items to show only those for demo purposes
@@ -530,7 +531,7 @@ const ProfilePage = () => {
                       <div className="relative">
                         <img
                           src={item.image || (item as any).image}
-                          alt={item.title || (item as any).name}
+                          alt={item.name}
                           className="w-full h-48 object-cover"
                         />
                         <Button
@@ -544,10 +545,10 @@ const ProfilePage = () => {
                       </div>
                       <CardContent className="p-4">
                         <h3 className="font-semibold truncate">
-                          {item.title || (item as any).name}
+                          {item.name || (item as any).name}
                         </h3>
                         <p className="text-muted-foreground text-sm">
-                          {item.celebrity || (item as any).seller?.name}
+                          {item.seller?.name}
                         </p>
                         <div className="flex justify-between items-center mt-2">
                           <Badge
@@ -561,7 +562,7 @@ const ProfilePage = () => {
                           </Badge>
                           <span className="font-semibold">
                             {formatCurrency(
-                              item.currentBid || (item as any).price
+                              "currentBid" in item ? item.currentBid : item.price
                             )}
                           </span>
                         </div>

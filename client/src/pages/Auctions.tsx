@@ -391,12 +391,12 @@ const Auctions = () => {
                 Minimum bid: {selectedAuction ? formatCurrency(selectedAuction.currentBid + 1) : ""}
               </p>
             </div>
-            {selectedAuction?.charityPercent > 0 && (
+            {(selectedAuction?.charityPercent ?? 0) > 0 && (
               <div className="bg-green-50 p-3 rounded-md mb-4">
                 <p className="text-sm text-green-700 flex items-center">
-                  <span className="font-semibold">{selectedAuction.charityPercent}%</span> 
+                  <span className="font-semibold">{selectedAuction?.charityPercent}%</span> 
                   <span className="mx-1">of this auction goes to</span>
-                  <span className="font-semibold">{selectedAuction.charityName}</span>
+                  <span className="font-semibold">{selectedAuction?.charityName}</span>
                 </p>
               </div>
             )}
