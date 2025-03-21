@@ -114,11 +114,11 @@ const Signup = () => {
   const strengthInfo = getStrengthLabel(passwordStrength);
 
   return (
-    <div className="container max-w-[1200px] mx-auto my-8 border-2 border-purple-300 rounded-xl overflow-hidden shadow-xl bg-white/80 backdrop-blur-sm relative">
+    <div className="container max-w-[1100px] mx-auto my-6 border-2 border-purple-300 rounded-xl overflow-hidden shadow-xl bg-white/80 backdrop-blur-sm fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
       <div className="absolute inset-0 bg-purple-100/20 rounded-xl"></div>
-      <div className="h-[700px] flex relative z-10">
-        <div className="w-full md:w-[55%] flex items-center justify-center p-6 md:p-12 order-2 md:order-1">
-          <div className="w-full max-w-md mt-4">
+      <div className="h-[650px] flex relative z-10">
+        <div className="w-full md:w-1/2 flex items-center justify-center p-6 md:p-10 order-2 md:order-1">
+          <div className="w-full max-w-md">
             <div className="text-center mb-8">
               <h1 className="font-['Playfair_Display'] text-3xl md:text-4xl text-primary mb-2">Join StarDrobes</h1>
               <p className="text-neutral-300 font-['Inter']">Create an account to shop exclusive celebrity items</p>
@@ -317,7 +317,7 @@ const Signup = () => {
         
         <div className="hidden md:flex w-1/2 bg-gradient-to-r from-indigo-600 to-purple-700 items-center justify-center relative order-1 md:order-2">
           <div className="absolute inset-0 opacity-30 bg-[url('https://images.unsplash.com/photo-1557804506-669a67965ba0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1374&q=80')] bg-cover bg-center"></div>
-          <div className="z-10 text-white text-center p-8 max-w-md animate-[slideUp_0.5s_ease_forwards] relative">
+          <div className="z-10 text-white text-center p-8 max-w-md relative">
             <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
               <Star className="h-10 w-10 text-white" />
             </div>
