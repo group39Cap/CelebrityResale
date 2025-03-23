@@ -99,46 +99,43 @@ const Home = () => {
         </div>
       </div>
       
-      {/* Featured Celebrities */}
-      <div className="bg-neutral-100 py-16 px-6">
-        <div className="container mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-['Playfair_Display'] text-primary mb-2">Featured Celebrities</h2>
-            <p className="text-neutral-300 max-w-xl mx-auto">Explore exclusive collections from your favorite stars</p>
+
+   {/* Featured Celebrities */}
+<div className="bg-neutral-100 py-16 px-6">
+  <div className="container mx-auto">
+    <div className="text-center mb-12">
+      <h2 className="text-3xl font-['Playfair_Display'] text-primary mb-2">Featured Celebrities</h2>
+      <p className="text-neutral-300 max-w-xl mx-auto">Explore exclusive collections from your favorite stars</p>
+    </div>
+    
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      {featuredCelebrities.map((celebrity, index) => (
+        <Card 
+          key={celebrity.id} 
+          className="rounded-lg shadow-lg overflow-hidden text-center transition-transform hover:-translate-y-1 duration-300 animate-[slideUp_0.5s_ease_forwards]"
+          style={{ animationDelay: `${index * 0.1}s` }}
+        >
+          <div className="aspect-[3/2] w-full overflow-hidden">
+            <img 
+              src={celebrity.image} 
+              alt={celebrity.name} 
+              className="w-full h-full object-cover"  
+            />
           </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {featuredCelebrities.map((celebrity, index) => (
-              <Card 
-                key={celebrity.id} 
-                className="rounded-lg shadow-lg overflow-hidden text-center transition-transform hover:-translate-y-1 duration-300 animate-[slideUp_0.5s_ease_forwards]"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <div className="h-40 overflow-hidden">
-                  <img src={celebrity.image} alt={celebrity.name} className="w-full h-full object-cover object-top" />
-                </div>
-                <CardContent className="p-4">
-                  <h3 className="font-['Playfair_Display'] font-medium">{celebrity.name}</h3>
-                  <p className="text-sm text-neutral-300 mb-3">{celebrity.role}</p>
-                  <Link href={`/celebrities/${celebrity.id}`}>
-                    <span className="text-[#6A0DAD] text-sm font-medium hover:underline cursor-pointer">
-                      View Collection
-                    </span>
-                  </Link>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-          
-          <div className="text-center mt-10">
-            <Link href="/celebrities">
-              <Button variant="outline" className="bg-transparent text-primary border-2 border-primary px-6 py-2 rounded-md font-medium hover:bg-primary hover:text-white transition-colors inline-block">
-                View All Celebrities
-              </Button>
+          <CardContent className="p-4">
+            <h3 className="font-['Playfair_Display'] font-medium">{celebrity.name}</h3>
+            <p className="text-sm text-neutral-300 mb-3">{celebrity.role}</p>
+            <Link href={`/celebrities/${celebrity.id}`}>
+              <span className="text-[#6A0DAD] text-sm font-medium hover:underline cursor-pointer">
+                View Collection
+              </span>
             </Link>
-          </div>
-        </div>
-      </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  </div>
+</div>
       
       {/* How It Works */}
       <div className="bg-white py-16 px-6">
@@ -196,7 +193,7 @@ const Home = () => {
             
             <div className="bg-primary-light p-6 rounded-lg animate-[slideUp_0.5s_ease_forwards]" style={{ animationDelay: '0.2s' }}>
               <div className="flex items-center mb-4">
-                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=387&q=80" alt="Client" className="w-12 h-12 rounded-full object-cover" />
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=387&q=80" alt="Client" className="w-12 h-12 rounded-full object-center" />
                 <div className="ml-3">
                   <h4 className="font-['Montserrat'] font-medium">Robert M.</h4>
                   <div className="flex text-[#D4AF37] text-sm">
