@@ -1,0 +1,74 @@
+**Frontend Requirements for the Celebrity Resale Platform**
+
+## 1. Project Structure
+```
+frontend/
+│── public/
+│── src/
+│   │── components/
+│   │   │── Auth/
+│   │   │   ├── Login.tsx
+│   │   │   ├── Register.tsx
+│   │   │   ├── Logout.tsx
+│   │   │── Layout/
+│   │   │   ├── Navbar.tsx
+│   │   │   ├── Footer.tsx
+│   │   │── Pages/
+│   │   │   ├── Home.tsx
+│   │   │   ├── Profile.tsx
+│   │   │   ├── ProductDetails.tsx
+│   │   │   ├── Checkout.tsx
+│   │   │   ├── AdminDashboard.tsx
+│   │   │   ├── NotFound.tsx
+│   │   │── hooks/
+│   │   │   ├── useAuth.ts
+│   │   │── context/
+│   │   │   ├── AuthContext.tsx
+│   │   │── utils/
+│   │   │   ├── api.ts
+│   │── App.tsx
+│   │── index.tsx
+│── package.json
+```
+
+## 2. Authentication
+- **Login** (`/login`): Users can log in via email/password.
+- **Register** (`/register`): Users can create an account.
+- **Logout**: Users can log out.
+- **Session Management**: Use cookies for authentication (from backend implementation).
+
+## 3. User Roles & Dashboards
+- **Regular Users:** Can browse items, place bids, and purchase fixed-price items.
+- **Admin Panel:** Admins can manage products, approve listings, and track sales.
+- **Celebrity Role:** No product listing; only authenticated users can purchase.
+
+## 4. Auction & Fixed-Price System
+- **Auction for high-value items** (Rolex, jewelry, etc.)
+  - Display current highest bid.
+  - Users can place bids.
+  - Implement a bidding timer.
+  - Verify funds before bid submission.
+- **Fixed-price sales for regular items**
+  - First-come, first-serve basis.
+  - Direct checkout without bidding.
+
+## 5. Payment Integration
+- **Paystack Integration**
+  - One-time payments for fixed-price items.
+  - Pre-authorization for auction bids.
+
+## 6. API Integration
+- Fetch products from backend (`/products` endpoint).
+- Fetch single product details (`/products/:id`).
+- Fetch user profile (`/auth/me`).
+- Fetch bidding history (`/bids`).
+- Submit a bid (`/bids/submit`).
+- Process payments (`/payments/checkout`).
+
+## 7. Additional Features
+- **Profile Page:** Order history, saved items.
+- **Notifications:** Alert users if payment fails.
+- **Security:** Proper token handling, error handling.
+
+This document should be provided to Replit to build the frontend based on the backend structure we've implemented.
+

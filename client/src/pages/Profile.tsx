@@ -1,942 +1,241 @@
-import { useState } from "react";
-import { useLocation } from "wouter";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent } from "@/components/ui/card";
+import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/use-auth";
+import { Order, OrderItem, Product } from "@shared/schema";
+import Navbar from "@/components/Layout/Navbar";
+import Footer from "@/components/Layout/Footer";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/context/AuthContext";
-import { fixedPriceItems, auctions } from "@/data/mockData";
-import { formatCurrency, formatDate } from "@/lib/utils";
-import {
-  Settings,
-  CreditCard,
-  User,
-  Heart,
-  Clock,
-  ShoppingBag,
-  Shield,
-  Bell,
-  LogOut,
-  Gavel,
-  CheckCircle2,
-  HelpCircle,
-  Copy,
-  Info,
-} from "lucide-react";
+import { Loader2, User, ShoppingBag, Heart, Settings, Clock } from "lucide-react";
 
-// Filter items to show only those for demo purposes
-const userPurchases = fixedPriceItems.slice(0, 2);
-const userBids = auctions.slice(0, 3);
-const userWatchlist = [...auctions.slice(3, 5), ...fixedPriceItems.slice(3, 5)];
-
-const ProfilePage = () => {
-  const { state, logout } = useAuth();
-  const [location, setLocation] = useLocation();
-  const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState("purchases");
-
-  // Profile form state
-  const [formData, setFormData] = useState({
-    firstName: state.user?.firstName || "",
-    lastName: state.user?.lastName || "",
-    email: state.user?.email || "",
-    phone: "555-123-4567", // Mock data
-    bio: "Fashion enthusiast and collector of celebrity items. Love supporting charitable causes through my purchases.",
-    notifications: {
-      email: true,
-      sms: false,
-      app: true,
-    },
-    addresses: [
-      {
-        type: "Primary",
-        street: "123 Fashion Ave",
-        city: "New York",
-        state: "NY",
-        zip: "10001",
-        country: "United States",
-      },
-    ],
-    paymentMethods: [
-      {
-        type: "Credit Card",
-        last4: "4242",
-        expiry: "04/25",
-        network: "Visa",
-        default: true,
-      },
-    ],
+const Profile = () => {
+  const { user } = useAuth();
+  
+  const {
+    data: orders,
+    isLoading: ordersLoading,
+    error: ordersError,
+  } = useQuery<Order[]>({
+    queryKey: ["/api/orders"],
   });
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleNotificationChange = (type: "email" | "sms" | "app") => {
-    setFormData((prev) => ({
-      ...prev,
-      notifications: {
-        ...prev.notifications,
-        [type]: !prev.notifications[type],
-      },
-    }));
-  };
-
-  const handleSaveProfile = () => {
-    toast({
-      title: "Profile Updated",
-      description: "Your profile information has been saved successfully.",
-    });
-  };
-
-  const handleLogout = () => {
-    logout();
-    setLocation("/");
-  };
-
-  const handleDeletePaymentMethod = (last4: string) => {
-    toast({
-      title: "Payment Method Removed",
-      description: `Card ending in ${last4} has been removed.`,
-    });
-  };
-
-  const handleSetDefaultPaymentMethod = (last4: string) => {
-    toast({
-      title: "Default Payment Method Updated",
-      description: `Card ending in ${last4} is now your default payment method.`,
-    });
-  };
-
-  const handleRemoveFromWatchlist = (id: number) => {
-    toast({
-      title: "Removed from Watchlist",
-      description: "Item has been removed from your watchlist.",
-    });
-  };
-
-  if (!state.user) {
-    setLocation("/login");
-    return null;
+  
+  if (!user) {
+    return null; // Should be caught by ProtectedRoute
   }
-
+  
+  const userInitials = user.fullName
+    ? user.fullName.split(' ').map(n => n[0]).join('').toUpperCase()
+    : user.username.substring(0, 2).toUpperCase();
+  
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
-      <div className="flex flex-col md:flex-row gap-8">
-        {/* Left Sidebar with Profile Summary and Navigation */}
-        <div className="w-full md:w-64">
-          <div className="sticky top-24">
-            <Card className="overflow-hidden mb-6 shadow-md border-0">
-              <div className="bg-gradient-to-r from-purple-600 to-indigo-600 h-20 relative">
-                {state.user.isCelebrity && (
-                  <Badge className="absolute top-2 right-2 bg-gradient-to-r from-amber-400 to-amber-600 text-white border-0">
-                    Celebrity
-                  </Badge>
-                )}
-              </div>
-              <CardContent className="pt-12 pb-4 px-4 text-center">
-                <div className="w-20 h-20 rounded-full bg-white p-1 mx-auto -mt-16 mb-3 shadow-md">
-                  {state.user.profileImage ? (
-                    <img
-                      src={state.user.profileImage}
-                      alt={state.user.firstName}
-                      className="w-full h-full rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full rounded-full bg-purple-100 flex items-center justify-center text-purple-600">
-                      <User size={32} />
+    <div className="min-h-screen flex flex-col">
+      <Navbar />
+      
+      <div className="flex-grow bg-neutral-50 py-12">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row gap-8 mb-8">
+            {/* User Profile Card */}
+            <Card className="md:w-1/3">
+              <CardContent className="pt-6">
+                <div className="flex flex-col items-center text-center">
+                  <Avatar className="h-24 w-24 mb-4">
+                    <AvatarImage src="" alt={user.fullName || user.username} />
+                    <AvatarFallback className="bg-[#0F172A] text-white text-xl">
+                      {userInitials}
+                    </AvatarFallback>
+                  </Avatar>
+                  
+                  <h2 className="text-2xl font-bold text-[#0F172A]">{user.fullName || user.username}</h2>
+                  <p className="text-neutral-500 mb-4">{user.email}</p>
+                  
+                  {user.isAdmin && (
+                    <Badge className="bg-[#DCA54C] hover:bg-[#C4902F] mb-4">Admin</Badge>
+                  )}
+                  
+                  <Separator className="my-4" />
+                  
+                  <div className="grid grid-cols-2 gap-4 w-full">
+                    <div className="flex flex-col items-center p-3 rounded-md bg-neutral-100">
+                      <span className="text-lg font-bold text-[#0F172A]">
+                        {ordersLoading ? "..." : orders?.length || 0}
+                      </span>
+                      <span className="text-sm text-neutral-500">Orders</span>
                     </div>
-                  )}
-                </div>
-                <h2 className="font-bold text-lg">{`${state.user.firstName} ${state.user.lastName}`}</h2>
-                <p className="text-sm text-muted-foreground">{state.user.email}</p>
-                <div className="mt-2">
-                  {state.user.role === "admin" && (
-                    <Badge className="bg-amber-100 text-amber-800 border-amber-200">
-                      Admin
-                    </Badge>
-                  )}
-                  {state.user.role === "user" && (
-                    <Badge className="bg-blue-100 text-blue-800 border-blue-200">
-                      Member
-                    </Badge>
-                  )}
+                    <div className="flex flex-col items-center p-3 rounded-md bg-neutral-100">
+                      <span className="text-lg font-bold text-[#0F172A]">0</span>
+                      <span className="text-sm text-neutral-500">Favorites</span>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
-
-            <div className="space-y-1">
-              <Button
-                variant={activeTab === "purchases" ? "default" : "ghost"}
-                onClick={() => setActiveTab("purchases")}
-                className="w-full justify-start"
-              >
-                <ShoppingBag className="mr-2 h-4 w-4" />
-                My Purchases
-              </Button>
-              <Button
-                variant={activeTab === "bids" ? "default" : "ghost"}
-                onClick={() => setActiveTab("bids")}
-                className="w-full justify-start"
-              >
-                <Gavel className="mr-2 h-4 w-4" />
-                My Bids
-              </Button>
-              <Button
-                variant={activeTab === "watchlist" ? "default" : "ghost"}
-                onClick={() => setActiveTab("watchlist")}
-                className="w-full justify-start"
-              >
-                <Heart className="mr-2 h-4 w-4" />
-                Watchlist
-              </Button>
-              <Button
-                variant={activeTab === "settings" ? "default" : "ghost"}
-                onClick={() => setActiveTab("settings")}
-                className="w-full justify-start"
-              >
-                <Settings className="mr-2 h-4 w-4" />
-                Settings
-              </Button>
-              <Separator className="my-2" />
-              <Button
-                variant="ghost"
-                onClick={handleLogout}
-                className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                Logout
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Main Content Area */}
-        <div className="flex-1">
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <div className="hidden">
-              <TabsList>
-                <TabsTrigger value="purchases">Purchases</TabsTrigger>
-                <TabsTrigger value="bids">Bids</TabsTrigger>
-                <TabsTrigger value="watchlist">Watchlist</TabsTrigger>
-                <TabsTrigger value="settings">Settings</TabsTrigger>
-              </TabsList>
-            </div>
-
-            {/* Purchases Tab */}
-            <TabsContent value="purchases" className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold">My Purchases</h1>
-                <div className="text-muted-foreground text-sm">
-                  Showing {userPurchases.length} items
-                </div>
-              </div>
-
-              {userPurchases.length === 0 ? (
-                <div className="text-center py-12">
-                  <ShoppingBag className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-medium mb-2">No purchases yet</h3>
-                  <p className="text-muted-foreground mb-4">
-                    When you purchase items, they will appear here.
-                  </p>
-                  <Button onClick={() => setLocation("/fixed-price")}>
-                    Browse Items
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {userPurchases.map((item) => (
-                    <Card key={item.id} className="overflow-hidden border-0 shadow-md">
-                      <CardContent className="p-0">
-                        <div className="flex flex-col md:flex-row">
-                          <div className="md:w-1/4">
-                            <img
-                              src={item.image}
-                              alt={item.name}
-                              className="w-full h-40 md:h-full object-cover"
-                            />
-                          </div>
-                          <div className="flex-1 p-4 md:p-6">
-                            <div className="flex flex-col md:flex-row md:items-start justify-between mb-4">
-                              <div>
-                                <h3 className="font-semibold text-lg">
-                                  {item.name}
-                                </h3>
-                                <div className="flex items-center mt-1">
-                                  <img
-                                    src={item.seller.image}
-                                    alt={item.seller.name}
-                                    className="w-6 h-6 rounded-full mr-2 object-cover"
-                                  />
-                                  <span className="text-sm text-muted-foreground">
-                                    {item.seller.name}
-                                  </span>
-                                  {item.seller.verified && (
-                                    <Badge
-                                      variant="outline"
-                                      className="ml-2 px-1 py-0 text-xs"
-                                    >
-                                      Verified
-                                    </Badge>
-                                  )}
-                                </div>
-                              </div>
-                              <div className="mt-4 md:mt-0 text-right">
-                                <span className="font-bold text-lg">
-                                  {formatCurrency(item.price)}
-                                </span>
-                                <p className="text-sm text-muted-foreground">
-                                  Purchased on {formatDate(new Date())}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex flex-wrap gap-2 mb-4">
-                              <Badge className="bg-blue-100 text-blue-800 border-blue-200">
-                                {item.category}
-                              </Badge>
-                              <Badge className="bg-purple-100 text-purple-800 border-purple-200">
-                                {item.condition}
-                              </Badge>
-                              {item.charityPercent > 0 && (
-                                <Badge className="bg-green-100 text-green-800 border-green-200">
-                                  {item.charityPercent}% to Charity
-                                </Badge>
-                              )}
-                            </div>
-                            <div className="flex flex-col md:flex-row md:items-center justify-between mt-4">
-                              <div className="flex items-center text-green-600">
-                                <CheckCircle2 size={16} className="mr-1" />
-                                <span className="text-sm">
-                                  Authentication Certificate Available
-                                </span>
-                              </div>
-                              <div className="mt-4 md:mt-0 space-x-2">
-                                <Button variant="outline" size="sm">
-                                  View Details
-                                </Button>
-                                <Button size="sm">
-                                  <HelpCircle size={14} className="mr-1" />
-                                  Support
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </TabsContent>
-
-            {/* Bids Tab */}
-            <TabsContent value="bids" className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold">My Bids</h1>
-                <div className="text-muted-foreground text-sm">
-                  Showing {userBids.length} items
-                </div>
-              </div>
-
-              {userBids.length === 0 ? (
-                <div className="text-center py-12">
-                  <Gavel className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-medium mb-2">No active bids</h3>
-                  <p className="text-muted-foreground mb-4">
-                    When you bid on auction items, they will appear here.
-                  </p>
-                  <Button onClick={() => setLocation("/auctions")}>
-                    Browse Auctions
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {userBids.map((auction) => {
-                    const isEnded = new Date(auction.endTime) < new Date();
-                    const isWinning = auction.currentBid === auction.highestBid;
-
-                    return (
-                      <Card
-                        key={auction.id}
-                        className={`overflow-hidden border-0 shadow-md ${
-                          isEnded && isWinning
-                            ? "border-l-4 border-l-green-500"
-                            : ""
-                        }`}
-                      >
-                        <CardContent className="p-0">
-                          <div className="flex flex-col md:flex-row">
-                            <div className="md:w-1/4">
-                              <img
-                                src={auction.image}
-                                alt={auction.title}
-                                className="w-full h-40 md:h-full object-cover"
-                              />
-                            </div>
-                            <div className="flex-1 p-4 md:p-6">
-                              <div className="flex flex-col md:flex-row md:items-start justify-between mb-4">
-                                <div>
-                                  <h3 className="font-semibold text-lg">
-                                    {auction.title}
-                                  </h3>
-                                  <div className="flex items-center mt-1">
-                                    <span className="text-sm text-muted-foreground">
-                                      By {auction.celebrity}
-                                    </span>
-                                  </div>
-                                </div>
-                                <div className="mt-4 md:mt-0 text-right">
-                                  <div className="font-bold text-lg">
-                                    {formatCurrency(auction.currentBid)}
-                                    <span className="text-sm font-normal text-muted-foreground ml-1">
-                                      (Your Bid)
-                                    </span>
-                                  </div>
-                                  <p className="text-sm text-muted-foreground">
-                                    Highest Bid:{" "}
-                                    {formatCurrency(auction.highestBid)}
-                                  </p>
-                                </div>
-                              </div>
-
-                              <div className="flex flex-wrap gap-2 mb-4">
-                                <Badge
-                                  className={`${
-                                    isEnded
-                                      ? "bg-red-100 text-red-800 border-red-200"
-                                      : "bg-blue-100 text-blue-800 border-blue-200"
-                                  }`}
-                                >
-                                  {isEnded ? "Ended" : "Active"}
-                                </Badge>
-                                <Badge className="bg-purple-100 text-purple-800 border-purple-200">
-                                  {auction.category}
-                                </Badge>
-                                {isEnded && isWinning && (
-                                  <Badge className="bg-green-100 text-green-800 border-green-200">
-                                    You Won!
-                                  </Badge>
-                                )}
-                                {!isEnded && isWinning && (
-                                  <Badge className="bg-amber-100 text-amber-800 border-amber-200">
-                                    Highest Bidder
-                                  </Badge>
-                                )}
-                                {!isEnded && !isWinning && (
-                                  <Badge className="bg-red-100 text-red-800 border-red-200">
-                                    Outbid
-                                  </Badge>
-                                )}
-                              </div>
-
-                              <div className="flex items-center text-muted-foreground mb-4">
-                                <Clock size={16} className="mr-1" />
-                                <span className="text-sm">
-                                  {isEnded
-                                    ? `Ended ${formatDate(auction.endTime)}`
-                                    : `Ends ${formatDate(auction.endTime)}`}
-                                </span>
-                              </div>
-
-                              <div className="flex flex-col md:flex-row md:items-center justify-between mt-4">
-                                {isEnded && isWinning ? (
-                                  <div className="flex items-center text-green-600">
-                                    <CheckCircle2 size={16} className="mr-1" />
-                                    <span className="text-sm">
-                                      You won this auction!
-                                    </span>
-                                  </div>
-                                ) : (
-                                  <div></div>
-                                )}
-                                <div className="mt-4 md:mt-0 space-x-2">
-                                  {isEnded && isWinning ? (
-                                    <Button
-                                      onClick={() =>
-                                        setLocation("/auction-checkout")
-                                      }
-                                      size="sm"
-                                    >
-                                      Complete Purchase
-                                    </Button>
-                                  ) : !isEnded ? (
-                                    <Button
-                                      onClick={() => setLocation("/auctions")}
-                                      size="sm"
-                                    >
-                                      Increase Bid
-                                    </Button>
-                                  ) : null}
-                                  <Button variant="outline" size="sm">
-                                    View Details
-                                  </Button>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
-              )}
-            </TabsContent>
-
-            {/* Watchlist Tab */}
-            <TabsContent value="watchlist" className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold">My Watchlist</h1>
-                <div className="text-muted-foreground text-sm">
-                  Showing {userWatchlist.length} items
-                </div>
-              </div>
-
-              {userWatchlist.length === 0 ? (
-                <div className="text-center py-12">
-                  <Heart className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-medium mb-2">Watchlist is empty</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Save items to your watchlist to keep track of them.
-                  </p>
-                  <div className="space-x-4">
-                    <Button
-                      variant="outline"
-                      onClick={() => setLocation("/fixed-price")}
-                    >
-                      Browse Items
-                    </Button>
-                    <Button onClick={() => setLocation("/auctions")}>
-                      Browse Auctions
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {userWatchlist.map((item) => (
-                    <Card key={item.id} className="overflow-hidden border-0 shadow-md">
-                      <div className="relative">
-                        <img
-                          src={item.image || (item as any).image}
-                          alt={item.name}
-                          className="w-full h-48 object-cover"
-                        />
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="absolute top-2 right-2 bg-white bg-opacity-80 text-red-500 hover:bg-white hover:text-red-600"
-                          onClick={() => handleRemoveFromWatchlist(item.id)}
-                        >
-                          <Heart className="h-5 w-5 fill-current" />
-                        </Button>
-                      </div>
-                      <CardContent className="p-4">
-                        <h3 className="font-semibold truncate">
-                          {item.name || (item as any).name}
-                        </h3>
-                        <p className="text-muted-foreground text-sm">
-                          {item.seller?.name}
-                        </p>
-                        <div className="flex justify-between items-center mt-2">
-                          <Badge
-                            className={
-                              "auction" in item
-                                ? "bg-purple-100 text-purple-800"
-                                : "bg-blue-100 text-blue-800"
-                            }
-                          >
-                            {"auction" in item ? "Auction" : "Fixed Price"}
-                          </Badge>
-                          <span className="font-semibold">
-                            {formatCurrency(
-                              "currentBid" in item ? item.currentBid : item.price
-                            )}
-                          </span>
-                        </div>
-                        <Button className="w-full mt-4" size="sm">
-                          View Details
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </TabsContent>
-
-            {/* Settings Tab */}
-            <TabsContent value="settings" className="space-y-6">
-              <h1 className="text-2xl font-bold">Account Settings</h1>
-
-              <Tabs defaultValue="profile" className="w-full">
-                <TabsList className="grid grid-cols-3 mb-6">
-                  <TabsTrigger value="profile" className="flex items-center">
-                    <User className="mr-2 h-4 w-4" />
-                    Profile
+            
+            {/* User Activity */}
+            <div className="md:w-2/3">
+              <Tabs defaultValue="orders">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="orders" className="flex items-center gap-2">
+                    <ShoppingBag className="h-4 w-4" />
+                    <span>Orders</span>
                   </TabsTrigger>
-                  <TabsTrigger value="payment" className="flex items-center">
-                    <CreditCard className="mr-2 h-4 w-4" />
-                    Payment
+                  <TabsTrigger value="favorites" className="flex items-center gap-2">
+                    <Heart className="h-4 w-4" />
+                    <span>Favorites</span>
                   </TabsTrigger>
-                  <TabsTrigger value="notifications" className="flex items-center">
-                    <Bell className="mr-2 h-4 w-4" />
-                    Notifications
+                  <TabsTrigger value="settings" className="flex items-center gap-2">
+                    <Settings className="h-4 w-4" />
+                    <span>Settings</span>
                   </TabsTrigger>
                 </TabsList>
-
-                <TabsContent value="profile" className="space-y-4">
-                  <Card className="border-0 shadow-md">
-                    <CardContent className="pt-6">
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <Label htmlFor="firstName">First Name</Label>
-                            <Input
-                              id="firstName"
-                              name="firstName"
-                              value={formData.firstName}
-                              onChange={handleInputChange}
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="lastName">Last Name</Label>
-                            <Input
-                              id="lastName"
-                              name="lastName"
-                              value={formData.lastName}
-                              onChange={handleInputChange}
-                            />
-                          </div>
+                
+                {/* Orders Tab */}
+                <TabsContent value="orders">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Order History</CardTitle>
+                      <CardDescription>View all your past purchases and their status</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {ordersLoading ? (
+                        <div className="flex justify-center py-8">
+                          <Loader2 className="h-8 w-8 animate-spin text-[#DCA54C]" />
                         </div>
-
-                        <div>
-                          <Label htmlFor="email">Email</Label>
-                          <Input
-                            id="email"
-                            name="email"
-                            type="email"
-                            value={formData.email}
-                            onChange={handleInputChange}
-                          />
+                      ) : ordersError ? (
+                        <div className="text-center py-8 text-red-500">
+                          Failed to load orders. Please try again later.
                         </div>
-
-                        <div>
-                          <Label htmlFor="phone">Phone</Label>
-                          <Input
-                            id="phone"
-                            name="phone"
-                            value={formData.phone}
-                            onChange={handleInputChange}
-                          />
-                        </div>
-
-                        <div>
-                          <Label htmlFor="bio">Bio</Label>
-                          <Textarea
-                            id="bio"
-                            name="bio"
-                            value={formData.bio}
-                            onChange={handleInputChange}
-                            rows={4}
-                          />
-                        </div>
-
-                        <div className="pt-2">
-                          <Button onClick={handleSaveProfile}>
-                            Save Changes
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="border-0 shadow-md">
-                    <CardContent className="pt-6">
-                      <h3 className="text-lg font-semibold mb-4">Shipping Addresses</h3>
-                      {formData.addresses.map((address, index) => (
-                        <div
-                          key={index}
-                          className="border border-gray-200 rounded-md p-4 mb-4"
-                        >
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <Badge className="mb-2">{address.type}</Badge>
-                              <p className="font-medium">
-                                {formData.firstName} {formData.lastName}
-                              </p>
-                              <p>{address.street}</p>
-                              <p>
-                                {address.city}, {address.state} {address.zip}
-                              </p>
-                              <p>{address.country}</p>
+                      ) : orders && orders.length > 0 ? (
+                        <div className="space-y-6">
+                          {orders.map(order => (
+                            <div key={order.id} className="border rounded-md overflow-hidden">
+                              <div className="bg-neutral-100 p-4 flex justify-between items-center">
+                                <div>
+                                  <h3 className="font-medium">Order #{order.id}</h3>
+                                  <p className="text-sm text-neutral-500">
+                                    {new Date(order.createdAt).toLocaleDateString()}
+                                  </p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-lg font-semibold text-[#0F172A]">
+                                    ${order.total.toLocaleString()}
+                                  </span>
+                                  <Badge className={
+                                    order.status === "completed" 
+                                      ? "bg-green-100 text-green-800 hover:bg-green-100" 
+                                      : order.status === "pending" 
+                                      ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-100"
+                                      : "bg-neutral-100 text-neutral-800 hover:bg-neutral-100"
+                                  }>
+                                    {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                                  </Badge>
+                                </div>
+                              </div>
+                              
+                              <div className="p-4">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <Clock className="h-4 w-4 text-neutral-500" />
+                                  <span className="text-sm">
+                                    Estimated delivery: {new Date(
+                                      new Date(order.createdAt).getTime() + 7 * 24 * 60 * 60 * 1000
+                                    ).toLocaleDateString()}
+                                  </span>
+                                </div>
+                                
+                                {order.paymentReference && (
+                                  <p className="text-sm text-neutral-500 mb-2">
+                                    Payment Reference: {order.paymentReference}
+                                  </p>
+                                )}
+                              </div>
                             </div>
-                            <div className="space-x-2">
-                              <Button variant="outline" size="sm">
-                                Edit
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                              >
-                                Delete
-                              </Button>
-                            </div>
-                          </div>
+                          ))}
                         </div>
-                      ))}
-                      <Button variant="outline">
-                        Add New Address
-                      </Button>
+                      ) : (
+                        <div className="text-center py-12">
+                          <ShoppingBag className="h-12 w-12 text-neutral-300 mx-auto mb-4" />
+                          <h3 className="text-lg font-medium text-[#0F172A] mb-1">No orders yet</h3>
+                          <p className="text-neutral-500">
+                            You haven't made any purchases yet. Start exploring our collections!
+                          </p>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 </TabsContent>
-
-                <TabsContent value="payment" className="space-y-4">
-                  <Card className="border-0 shadow-md">
-                    <CardContent className="pt-6">
-                      <h3 className="text-lg font-semibold mb-4">
-                        Payment Methods
-                      </h3>
-                      {formData.paymentMethods.map((method, index) => (
-                        <div
-                          key={index}
-                          className="border border-gray-200 rounded-md p-4 mb-4"
-                        >
-                          <div className="flex justify-between items-start">
-                            <div className="flex">
-                              <div className="mr-4">
-                                {method.network === "Visa" ? (
-                                  <div className="w-10 h-6 bg-blue-100 rounded flex items-center justify-center text-blue-800 font-bold text-xs">
-                                    VISA
-                                  </div>
-                                ) : method.network === "Mastercard" ? (
-                                  <div className="w-10 h-6 bg-red-100 rounded flex items-center justify-center text-red-800 font-bold text-xs">
-                                    MC
-                                  </div>
-                                ) : (
-                                  <div className="w-10 h-6 bg-gray-100 rounded flex items-center justify-center text-gray-800 font-bold text-xs">
-                                    CARD
-                                  </div>
-                                )}
-                              </div>
-                              <div>
-                                <p className="font-medium">
-                                  {method.type} ending in {method.last4}
-                                </p>
-                                <p className="text-sm text-muted-foreground">
-                                  Expires {method.expiry}
-                                </p>
-                                {method.default && (
-                                  <Badge className="mt-1 bg-green-100 text-green-800 border-green-200">
-                                    Default
-                                  </Badge>
-                                )}
-                              </div>
-                            </div>
-                            <div className="space-x-2">
-                              {!method.default && (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() =>
-                                    handleSetDefaultPaymentMethod(method.last4)
-                                  }
-                                >
-                                  Set Default
-                                </Button>
-                              )}
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                onClick={() =>
-                                  handleDeletePaymentMethod(method.last4)
-                                }
-                              >
-                                Delete
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                      <Button variant="outline">
-                        Add Payment Method
-                      </Button>
+                
+                {/* Favorites Tab */}
+                <TabsContent value="favorites">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Saved Items</CardTitle>
+                      <CardDescription>Products you've saved for later</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-center py-12">
+                        <Heart className="h-12 w-12 text-neutral-300 mx-auto mb-4" />
+                        <h3 className="text-lg font-medium text-[#0F172A] mb-1">No favorites yet</h3>
+                        <p className="text-neutral-500">
+                          Save items you love to keep track of them and find them easily later.
+                        </p>
+                      </div>
                     </CardContent>
                   </Card>
-
-                  <Card className="border-0 shadow-md">
-                    <CardContent className="pt-6">
-                      <h3 className="text-lg font-semibold mb-4">
-                        Billing Information
-                      </h3>
+                </TabsContent>
+                
+                {/* Settings Tab */}
+                <TabsContent value="settings">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Account Settings</CardTitle>
+                      <CardDescription>Manage your profile information</CardDescription>
+                    </CardHeader>
+                    <CardContent>
                       <div className="space-y-4">
-                        <div className="p-4 bg-blue-50 rounded-md flex items-start">
-                          <Info className="text-blue-600 mr-2 mt-0.5" size={16} />
-                          <p className="text-sm text-blue-800">
-                            Your billing information is the same as your shipping
-                            address. To change billing info, update your shipping
-                            address.
+                        <div>
+                          <label className="text-sm font-medium">Username</label>
+                          <div className="flex items-center justify-between mt-1 p-3 border rounded">
+                            <span>{user.username}</span>
+                            <Badge variant="outline">Cannot Change</Badge>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <label className="text-sm font-medium">Email</label>
+                          <div className="flex items-center justify-between mt-1 p-3 border rounded">
+                            <span>{user.email}</span>
+                            <Badge variant="outline">Cannot Change</Badge>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <label className="text-sm font-medium">Full Name</label>
+                          <div className="flex items-center justify-between mt-1 p-3 border rounded">
+                            <span>{user.fullName || "Not set"}</span>
+                            <Badge variant="outline">Cannot Change</Badge>
+                          </div>
+                        </div>
+                        
+                        <div className="pt-4">
+                          <h3 className="text-lg font-medium mb-2">Password</h3>
+                          <p className="text-sm text-neutral-500 mb-4">
+                            For security reasons, password changes are currently disabled.
                           </p>
                         </div>
                       </div>
                     </CardContent>
                   </Card>
                 </TabsContent>
-
-                <TabsContent value="notifications" className="space-y-4">
-                  <Card className="border-0 shadow-md">
-                    <CardContent className="pt-6">
-                      <h3 className="text-lg font-semibold mb-4">
-                        Notification Preferences
-                      </h3>
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="font-medium">Email Notifications</p>
-                            <p className="text-sm text-muted-foreground">
-                              Receive order updates and alerts via email
-                            </p>
-                          </div>
-                          <div className="flex items-center">
-                            <button
-                              className={`w-12 h-6 rounded-full p-1 transition-colors ${
-                                formData.notifications.email
-                                  ? "bg-green-500"
-                                  : "bg-gray-300"
-                              }`}
-                              onClick={() =>
-                                handleNotificationChange("email")
-                              }
-                            >
-                              <div
-                                className={`w-4 h-4 rounded-full bg-white transform transition-transform ${
-                                  formData.notifications.email
-                                    ? "translate-x-6"
-                                    : ""
-                                }`}
-                              ></div>
-                            </button>
-                          </div>
-                        </div>
-                        <Separator />
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="font-medium">SMS Notifications</p>
-                            <p className="text-sm text-muted-foreground">
-                              Receive order updates and alerts via text message
-                            </p>
-                          </div>
-                          <div className="flex items-center">
-                            <button
-                              className={`w-12 h-6 rounded-full p-1 transition-colors ${
-                                formData.notifications.sms
-                                  ? "bg-green-500"
-                                  : "bg-gray-300"
-                              }`}
-                              onClick={() => handleNotificationChange("sms")}
-                            >
-                              <div
-                                className={`w-4 h-4 rounded-full bg-white transform transition-transform ${
-                                  formData.notifications.sms
-                                    ? "translate-x-6"
-                                    : ""
-                                }`}
-                              ></div>
-                            </button>
-                          </div>
-                        </div>
-                        <Separator />
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="font-medium">App Notifications</p>
-                            <p className="text-sm text-muted-foreground">
-                              Receive in-app notifications for important updates
-                            </p>
-                          </div>
-                          <div className="flex items-center">
-                            <button
-                              className={`w-12 h-6 rounded-full p-1 transition-colors ${
-                                formData.notifications.app
-                                  ? "bg-green-500"
-                                  : "bg-gray-300"
-                              }`}
-                              onClick={() => handleNotificationChange("app")}
-                            >
-                              <div
-                                className={`w-4 h-4 rounded-full bg-white transform transition-transform ${
-                                  formData.notifications.app
-                                    ? "translate-x-6"
-                                    : ""
-                                }`}
-                              ></div>
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="mt-6">
-                        <Button onClick={handleSaveProfile}>
-                          Save Preferences
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="border-0 shadow-md">
-                    <CardContent className="pt-6">
-                      <h3 className="text-lg font-semibold mb-4">
-                        Auction Alerts
-                      </h3>
-                      <div className="space-y-4">
-                        <div className="p-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-md">
-                          <h4 className="font-medium mb-2">
-                            Set up auction alerts by category
-                          </h4>
-                          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                            <Badge className="inline-flex items-center justify-center px-3 py-1 cursor-pointer bg-purple-100 text-purple-800 hover:bg-purple-200 transition-colors">
-                              <CheckCircle2 size={12} className="mr-1" />
-                              Clothing
-                            </Badge>
-                            <Badge className="inline-flex items-center justify-center px-3 py-1 cursor-pointer bg-slate-100 text-slate-800 hover:bg-slate-200 transition-colors">
-                              Accessories
-                            </Badge>
-                            <Badge className="inline-flex items-center justify-center px-3 py-1 cursor-pointer bg-purple-100 text-purple-800 hover:bg-purple-200 transition-colors">
-                              <CheckCircle2 size={12} className="mr-1" />
-                              Footwear
-                            </Badge>
-                            <Badge className="inline-flex items-center justify-center px-3 py-1 cursor-pointer bg-slate-100 text-slate-800 hover:bg-slate-200 transition-colors">
-                              Jewelry
-                            </Badge>
-                            <Badge className="inline-flex items-center justify-center px-3 py-1 cursor-pointer bg-purple-100 text-purple-800 hover:bg-purple-200 transition-colors">
-                              <CheckCircle2 size={12} className="mr-1" />
-                              Memorabilia
-                            </Badge>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
               </Tabs>
-            </TabsContent>
-          </Tabs>
+            </div>
+          </div>
         </div>
       </div>
+      
+      <Footer />
     </div>
   );
 };
 
-export default ProfilePage;
+export default Profile;

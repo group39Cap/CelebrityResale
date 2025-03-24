@@ -1,56 +1,52 @@
-import { Switch, Route, useLocation } from "wouter";
+import { Switch, Route } from "wouter";
+import { queryClient } from "./lib/queryClient";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
+import { AuthProvider } from "./hooks/use-auth";
+import { CartProvider } from "@/components/ShoppingCart";
 import NotFound from "@/pages/not-found";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import Home from "@/pages/Home";
-import Login from "@/pages/Login";
-import ForgotPassword from './pages/ForgotPassword';
-import Signup from "@/pages/Signup";
-import Auctions from "@/pages/Auctions";
-import Celebrities from "@/pages/Celebrities";
-import AdminDashboard from "@/pages/AdminDashboard";
-import FixedPrice from "@/pages/FixedPrice";
-import Checkout from "@/pages/Checkout";
-import AuctionCheckout from "@/pages/AuctionCheckout";
-import Profile from "@/pages/Profile";
-import About from "@/pages/About";
-import { useAuth } from "./context/AuthContext";
+import HomePage from "@/pages/home-page";
+import AuthPage from "@/pages/auth-page";
+import ProductDetails from "@/pages/product-details";
+import Checkout from "@/pages/checkout";
+import AdminDashboard from "@/pages/admin-dashboard";
+import Profile from "@/pages/profile";
+import ShopPage from "@/pages/shop-page";
+import AuctionPage from "@/pages/auction-page";
+import AboutPage from "@/pages/about-page";
+import CelebritiesPage from "@/pages/celebrities-page";
+import { ProtectedRoute } from "./lib/protected-route";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+
+function Router() {
+  return (
+    <Switch>
+      <Route path="/" component={HomePage} />
+      <Route path="/shop" component={ShopPage} />
+      <Route path="/auctions" component={AuctionPage} />
+      <Route path="/about" component={AboutPage} />
+      <Route path="/celebrities" component={CelebritiesPage} />
+      <Route path="/auth" component={AuthPage} />
+      <Route path="/product/:id" component={ProductDetails} />
+      <ProtectedRoute path="/checkout" component={Checkout} />
+      <ProtectedRoute path="/profile" component={() => <Profile />} />
+      <Route path="/forgot-password" component={ForgotPasswordPage} />
+      <ProtectedRoute path="/admin" component={AdminDashboard} />
+      <Route component={NotFound} />
+    </Switch>
+  );
+}
 
 function App() {
-  const { state } = useAuth();
-  const [location] = useLocation();
-  
-  // Check if the current page is login, signup, or forgot password
-  const isAuthPage = location === '/login' || location === '/signup' || location === '/forgot-password';
-
   return (
-    <div className="flex flex-col min-h-screen">
-      {!isAuthPage && <Navbar />}
-      <main className="flex-grow">
-        <Switch>
-          <Route path="/" component={Home} />
-          <Route path="/login" component={Login} />
-          <Route path="/forgot-password" component={ForgotPassword} />
-          <Route path="/signup" component={Signup} />
-          <Route path="/auctions" component={Auctions} />
-          <Route path="/celebrities" component={Celebrities} />
-          <Route path="/fixed-price" component={FixedPrice} />
-          <Route path="/checkout" component={Checkout} />
-          <Route path="/auction-checkout" component={AuctionCheckout} />
-          <Route path="/about" component={About} />
-          {state.user && (
-            <Route path="/profile" component={Profile} />
-          )}
-          {state.user && state.user.role === "admin" && (
-            <Route path="/admin" component={AdminDashboard} />
-          )}
-          <Route component={NotFound} />
-        </Switch>
-      </main>
-      {!isAuthPage && <Footer />}
-      <Toaster />
-    </div>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <CartProvider>
+          <Router />
+          <Toaster />
+        </CartProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
 

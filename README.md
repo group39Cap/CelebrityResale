@@ -1,1 +1,1 @@
-# frontend_celeb_platform
+# capstone_project

@@ -37,31 +37,24 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  try {
-    const server = await registerRoutes(app);
+  const server = await registerRoutes(app);
 
-    app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-      console.error(err); // Log errors for debugging
-      const status = err.status || err.statusCode || 500;
-      const message = err.message || "Internal Server Error";
+  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+    const status = err.status || err.statusCode || 500;
+    const message = err.message || "Internal Server Error";
 
-      res.status(status).json({ message });
-    });
+    res.status(status).json({ message });
+    throw err;
+  });
 
-    // Setup Vite in development mode
-    if (app.get("env") === "development") {
-      await setupVite(app, server);
-    } else {
-      serveStatic(app);
-    }
-
-    // Change the host from "0.0.0.0" to "localhost"
-    const port = 5000;
-    server.listen(port, "localhost", () => {
-      log(`Serving on port ${port}`);
-    });
-
-  } catch (error) {
-    console.error("Server startup failed:", error);
+  if (app.get("env") === "development") {
+    await setupVite(app, server);
+  } else {
+    serveStatic(app);
   }
+
+  const port = 5000;
+  server.listen(port, "0.0.0.0", () => {
+    log(`serving on port ${port}`);
+  });
 })();
